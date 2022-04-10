@@ -1,6 +1,6 @@
 {
-  "name" : "testrail-wdio-custom-reporter",
-  "description": "Create a run on testrail and the update the test cases results",
+  "name" : "testrail-wdio-reporter-2022",
+  "description": "Create a run on testrail and the update the test cases results, with the option to close the test run",
   "version": "1.0.0",
   "main": "./src/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
     "wdio-testrail",
     "reporter-testrail"
   ],
-  "author": "Luis Diego",
+  "author": "Doug Mason",
   "license": "MIT",
   "dependencies": {
     "@wdio/reporter": "^7.16.11",
@@ -23,10 +23,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LuisDiegoNavas/testrail-wdio-custom-reporter"
+    "url": "git+https://github.com/bikeracer4487/testrail-wdio-reporter-2022"
   },
   "bugs": {
-    "url": "https://github.com/LuisDiegoNavas/testrail-wdio-custom-reporter/issues"
+    "url": "https://github.com/bikeracer4487/testrail-wdio-reporter-2022/issues"
   },
   "homepage": "https://github.com/LuisDiegoNavas/testrail-wdio-custom-reporter#readme"
 }
