@@ -1,5 +1,5 @@
 
-# testrail-wdio-custom-reporter
+# testrail-wdio-reporter-2022
 
 Create a run on testrail and the update the test cases results
 Use test rail API https://www.gurock.com/testrail/docs/api/reference 
