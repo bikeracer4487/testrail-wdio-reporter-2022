@@ -3,20 +3,20 @@
 
 const WDIOReporter = require("@wdio/reporter").default;
 const axios = require('axios');
-const async = require('async')
+const async = require('async');
 let runId,
   params,
   resp;
-let resultsForIT = []
-let testCasesIDs = []
+let resultsForIT = [];
+let testCasesIDs = [];
 
 function getObject(case_id, status_id, comment, defect) {
   return {
     "case_id": case_id,
     "status_id": status_id,
     "comment": comment,
-  }
-}
+  };
+};
 
 const updateTestRunResults = async () => {
   resp = undefined;
@@ -62,6 +62,24 @@ const updateTestRun = async () => {
   }
 };
 
+const closeTestRun = async () => {
+  try {
+      const resp = await   axios.post(
+        `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
+        {
+          auth: {
+            username: params.username,
+            password: params.apiToken,
+          },
+        },
+      )
+      //console.log(resp.data);
+  } catch (err) {
+      // Handle Error Here
+      console.error(err);
+  }
+}
+
 function pushResults(testID, status, comment) {
   resp = undefined;
   axios.post(
@@ -87,8 +105,14 @@ module.exports = class CustomReporter extends WDIOReporter {
     options = Object.assign(options, { stdout: true })
     super(options)
     params = options;
-    let date = new Date()
-    let title = params.title == undefined ? `${params.runName} ${date.getDate()}.${date.getMonth()} ${date.getHours()}:${date.getMinutes()}` : params.title
+    let date = new Date();
+    let month = date.getMonth().toString();
+    let day = date.getDate().toString();
+    let minutes = date.getMinutes().toString();
+    if (month.length < 2) month = "0" + month;
+    if (day.length < 2) day = "0" + month;
+    if (minutes.length < 2) minutes = "0" + minutes;
+    let title = params.title == undefined ? `${params.runName} ${month}.${day} ${date.getHours()}:${minutes}` : params.title
     axios.post(
       `https://${params.domain}/index.php?/api/v2/add_run/${params.projectId}`,
       {
@@ -140,6 +164,7 @@ module.exports = class CustomReporter extends WDIOReporter {
     if (runnerStats.end != undefined) {
       this.sync();
     }
+    if (params.closeRun) closeTestRun();
     this.write('\nThe results are pushed!')
   }
 
