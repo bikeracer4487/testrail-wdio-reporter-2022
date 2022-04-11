@@ -78,7 +78,6 @@ const closeTestRun = async () => {
         },
       )
       //console.log(resp.data);
-      params.closeRun = false;
   } catch (err) {
       // Handle Error Here
       console.error(err);
@@ -169,8 +168,8 @@ module.exports = class TestrailReporter extends WDIOReporter {
     if (runnerStats.end != undefined) {
       this.sync();
     }
-    if (params.closeRun) closeTestRun();
     this.write('\nThe results are pushed!');
+    // if (params.closeRun) closeTestRun();
   }
 
   async sync(test, isSuite = false) {
