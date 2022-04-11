@@ -67,6 +67,10 @@ const closeTestRun = async () => {
       const resp = await   axios.post(
         `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
         {
+
+        },
+        
+        {
           auth: {
             username: params.username,
             password: params.apiToken,
@@ -74,6 +78,7 @@ const closeTestRun = async () => {
         },
       )
       //console.log(resp.data);
+      params.closeRun = false;
   } catch (err) {
       // Handle Error Here
       console.error(err);
@@ -112,7 +117,7 @@ module.exports = class TestrailReporter extends WDIOReporter {
     if (month.length < 2) month = "0" + month;
     if (day.length < 2) day = "0" + month;
     if (minutes.length < 2) minutes = "0" + minutes;
-    let title = params.title == undefined ? `${params.runName} ${month}.${day} ${date.getHours()}:${minutes}` : params.title
+    let title = params.title == undefined ? `${params.runName} ~ ${date.getFullYear()}.${month}.${day} - ${date.getHours()}:${minutes}` : params.title
     axios.post(
       `https://${params.domain}/index.php?/api/v2/add_run/${params.projectId}`,
       {
@@ -165,7 +170,7 @@ module.exports = class TestrailReporter extends WDIOReporter {
       this.sync();
     }
     if (params.closeRun) closeTestRun();
-    this.write('\nThe results are pushed!')
+    this.write('\nThe results are pushed!');
   }
 
   async sync(test, isSuite = false) {
