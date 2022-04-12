@@ -164,6 +164,36 @@ module.exports = class TestrailReporter extends WDIOReporter {
     if (runnerStats.end != undefined) {
       this.sync();
     }
+    let untested = 1;
+    let retries = 0;
+    while (untested > 0){
+      axios.get(
+        `https://${params.domain}/index.php?/api/v2/get_run/${runId}`,
+        {
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          auth: {
+            username: params.username,
+            password: params.apiToken,
+          },
+        },
+      )
+      .catch(function (error) {
+        // handle error
+        console.log(error);
+      })
+      .then((response) => {
+        // runId = response.data.id
+        // this.write(response.data);
+        console.log(response.data.untested);
+        untested = response.data.untested;
+      })
+
+      retries = retries + 1;
+
+      if (retries > 10) untested = 0;
+    }
     if (params.closeRun) closeTestRun();
     this.write('\nThe results are pushed!')
   }
