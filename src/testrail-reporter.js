@@ -18,8 +18,38 @@ function getObject(case_id, status_id, comment, defect) {
   };
 };
 
+function getTime() {
+  let time = new Date();
+  let time_string = `${time.getHours}:${time.getMinutes()}:${time.getSeconds}`;
+  return time_string;
+}
+
+function getRunStatus () {
+  console.log("Getting run status.");
+  try {
+    return axios.get(
+      `https://${params.domain}/index.php?/api/v2/get_run/${runId}`,
+      {
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        auth: {
+          username: params.username,
+          password: params.apiToken,
+        },
+      },
+    )
+  }
+  catch(error) {
+    // handle error
+    console.error(error);
+  }
+}
+
 const updateTestRunResults = async () => {
   resp = undefined;
+  // this.write(getTime() + ": Updating Test Run Results");
+  console.log("Updating test run results.");
 
   try {
     const resp = await axios.post(
@@ -41,6 +71,8 @@ const updateTestRunResults = async () => {
 };
 
 const updateTestRun = async () => {
+  // this.write(getTime() + ": Updating test run.");
+  console.log("Updating test run");
   try {
       const resp = await   axios.post(
         `https://${params.domain}/index.php?/api/v2/update_run/${runId}`,
@@ -63,21 +95,23 @@ const updateTestRun = async () => {
 };
 
 const closeTestRun = async () => {
+  // this.write(getTime() + ": Closing test run.");
+  console.log("Closing test run.");
   try {
-      const resp = await   axios.post(
-        `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
-        {
+    await axios.post(
+      `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
+      {
 
+      },
+      
+      {
+        auth: {
+          username: params.username,
+          password: params.apiToken,
         },
-        
-        {
-          auth: {
-            username: params.username,
-            password: params.apiToken,
-          },
-        },
-      )
-      //console.log(resp.data);
+      },
+    )
+    //console.log(resp.data);
   } catch (err) {
       // Handle Error Here
       console.error(err);
@@ -86,6 +120,9 @@ const closeTestRun = async () => {
 
 function pushResults(testID, status, comment) {
   resp = undefined;
+  // this.write(getTime() + ": Pushing results.");
+  console.log("Pushing results.");
+
   axios.post(
     `https://${params.domain}/index.php?/api/v2/add_result_for_case/${projectId}/${testID}`,
     {
@@ -168,9 +205,16 @@ module.exports = class TestrailReporter extends WDIOReporter {
     if (runnerStats.end != undefined) {
       this.sync();
     }
+    
+    /*
     let untested = 1;
+    let passed = 0;
+    let failed = 0;
+    let ran = 0;
     let retries = 0;
-    while (untested > 0){
+    while (untested > 0 || ran == 0){
+      // const runStatus = getRunStatus();
+
       axios.get(
         `https://${params.domain}/index.php?/api/v2/get_run/${runId}`,
         {
@@ -183,22 +227,30 @@ module.exports = class TestrailReporter extends WDIOReporter {
           },
         },
       )
-      .catch(function (error) {
-        // handle error
-        console.log(error);
+      .then(res => {
+        // console.log(res.data.untested_count);
+        passed = res.data.passed_count;
+        failed = res.data.failed_count;
+        ran = passed + failed;
+        untested = res.data.untested_count;
+        if ((untested == 0) && (params.closeRun) && (ran == 0)) {
+          console.log("Ran " + ran + ", Untested " + untested);
+          params.closeRun = false;
+          // closeTestRun();
+          console.log("Attempting to close run");
+        }
+        else if (untested == 0) console.log("Ran " + ran + ", Untested " + untested);
+        else console.log("Ran " + ran + ", Untested " + untested);
       })
-      .then((response) => {
-        // runId = response.data.id
-        // this.write(response.data);
-        console.log(response.data.untested);
-        untested = response.data.untested;
-      })
+      .catch(err => console.error(err));
 
       retries = retries + 1;
 
       if (retries > 10) untested = 0;
     }
-    if (params.closeRun) closeTestRun();
+    */
+    
+    // if (params.closeRun) closeTestRun();
     this.write('\nThe results are pushed!')
   }
 
