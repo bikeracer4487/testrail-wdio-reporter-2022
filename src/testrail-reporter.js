@@ -105,6 +105,9 @@ const closeTestRun = async () => {
       },
       
       {
+        headers: {
+          'Content-Type': 'application/json',
+        },
         auth: {
           username: params.username,
           password: params.apiToken,
@@ -206,6 +209,9 @@ module.exports = class TestrailReporter extends WDIOReporter {
       this.sync();
     }
     
+    if (params.closeTestRun) {
+      closeTestRun();
+    }
     /*
     let untested = 1;
     let passed = 0;
