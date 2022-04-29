@@ -25,7 +25,7 @@ function getTime() {
 }
 
 function getRunStatus () {
-  console.log("Getting run status.");
+  // console.log("Getting run status.");
   try {
     return axios.get(
       `https://${params.domain}/index.php?/api/v2/get_run/${runId}`,
@@ -49,7 +49,7 @@ function getRunStatus () {
 const updateTestRunResults = async () => {
   resp = undefined;
   // this.write(getTime() + ": Updating Test Run Results");
-  console.log("Updating test run results.");
+  // console.log("Updating test run results.");
 
   try {
     const resp = await axios.post(
@@ -72,7 +72,7 @@ const updateTestRunResults = async () => {
 
 const updateTestRun = async () => {
   // this.write(getTime() + ": Updating test run.");
-  console.log("Updating test run");
+  // console.log("Updating test run");
   try {
       const resp = await   axios.post(
         `https://${params.domain}/index.php?/api/v2/update_run/${runId}`,
@@ -96,29 +96,29 @@ const updateTestRun = async () => {
 
 const closeTestRun = async () => {
   // this.write(getTime() + ": Closing test run.");
-  console.log("Closing test run.");
-  try {
-    await axios.post(
-      `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
-      {
+  // console.log("Closing test run.");
+  await axios.post(
+    `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
+    {
 
+    },
+    
+    {
+      headers: {
+        'Content-Type': 'application/json',
       },
-      
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        auth: {
-          username: params.username,
-          password: params.apiToken,
-        },
+      auth: {
+        username: params.username,
+        password: params.apiToken,
       },
-    )
-    //console.log(resp.data);
-  } catch (err) {
-      // Handle Error Here
-      console.error(err);
-  }
+    })
+    .then(function (response) {
+      console.log(JSON.stringify(response.data));
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+  //console.log(resp.data);
 }
 
 function pushResults(testID, status, comment) {
