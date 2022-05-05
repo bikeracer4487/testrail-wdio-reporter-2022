@@ -4,11 +4,21 @@
 const WDIOReporter = require("@wdio/reporter").default;
 const axios = require('axios');
 const async = require('async');
+const { skipPartiallyEmittedExpressions } = require("typescript");
 let runId,
   params,
   resp;
+let waitFinish = true;
 let resultsForIT = [];
 let testCasesIDs = [];
+
+function sleep(duration) {
+	return new Promise(resolve => {
+		setTimeout(() => {
+			resolve()
+		}, duration * 1000)
+	})
+}
 
 function getObject(case_id, status_id, comment, defect) {
   return {
@@ -64,6 +74,12 @@ const updateTestRunResults = async () => {
         },
       },
     )
+    .then(function (response){
+
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
   } catch (err) { 
       // Handle Error Here
       console.error(err);
@@ -74,7 +90,7 @@ const updateTestRun = async () => {
   // this.write(getTime() + ": Updating test run.");
   // console.log("Updating test run");
   try {
-      const resp = await   axios.post(
+      const resp = await axios.post(
         `https://${params.domain}/index.php?/api/v2/update_run/${runId}`,
         {
           "case_ids": testCasesIDs,
@@ -113,7 +129,7 @@ const closeTestRun = async () => {
       },
     })
     .then(function (response) {
-      console.log(JSON.stringify(response.data));
+      //console.log(JSON.stringify(response.data));
     })
     .catch(function (error) {
       console.log(error);
@@ -150,11 +166,13 @@ module.exports = class TestrailReporter extends WDIOReporter {
     super(options)
     params = options;
     let date = new Date();
-    let month = date.getMonth().toString();
+    //let month_num = date.getMonth() + 1;
+    //let month = month_num.toString;
+    let month = (date.getMonth() + 1).toString();
     let day = date.getDate().toString();
     let minutes = date.getMinutes().toString();
     if (month.length < 2) month = "0" + month;
-    if (day.length < 2) day = "0" + month;
+    if (day.length < 2) day = "0" + day;
     if (minutes.length < 2) minutes = "0" + minutes;
     let title = params.title == undefined ? `${params.runName} ~ ${date.getFullYear()}.${month}.${day} - ${date.getHours()}:${minutes}` : params.title
     axios.post(
@@ -200,17 +218,47 @@ module.exports = class TestrailReporter extends WDIOReporter {
 
   onSuiteEnd(suiteStats) {
     if (suiteStats.tests == undefined) {
-      this.sync(test, true)
+      this.sync(test, true).then(() => {
+        if (params.closeRun){
+          closeTestRun();
+        }
+      });
     }
   }
 
   onRunnerEnd(runnerStats) {
     if (runnerStats.end != undefined) {
-      this.sync();
+      this.sync().then(() => {
+        if (params.closeRun){
+          closeTestRun();
+        }
+      });
     }
-    
-    if (params.closeTestRun) {
-      closeTestRun();
+
+    /*
+    if (params.closeRun) {
+      //console.log("Log - Closing test run.");
+      //this.write("\nWrite - Closing test run");
+      //closeTestRun();
+
+      let retries = 0;
+      while(retries < 100){
+        //this.write(`\nClosing Run, Attempt #${retries + 1}: `);
+        if(waitFinish = false){
+          //this.write("Running close");
+          //console.log(`\nClosing Run, Attempt #${retries + 1}: Running close`);
+          closeTestRun();
+        }
+        else{
+          //this.write("Skipping close");
+          //console.log(`\nClosing Run, Attempt #${retries + 1}: Skipping close`);
+        }
+        retries = retries + 1;
+      }
+    }
+    else {
+      //console.log("Log - Not closing test run");
+      this.write("\nWrite - Not closing test run");
     }
     /*
     let untested = 1;
