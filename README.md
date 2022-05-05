@@ -18,10 +18,10 @@ To do so, log into your TestRail account and go to Administration > Site Setting
 Add the required options to your WDIO config file
 
 ```javascript
-const CustomReporter = require('testrail-wdio-custom-reporter')
+const TestrailReporter = require('testrail-wdio-reporter-2022');
 
     reporters: 
-        [[CustomReporter, {
+        [[TestrailReporter, {
         projectId: 1,
         suiteId: 1,
         domain: 'xxxxx.testrail.io or com',
