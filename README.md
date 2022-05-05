@@ -27,7 +27,8 @@ const CustomReporter = require('testrail-wdio-custom-reporter')
         domain: 'xxxxx.testrail.io or com',
         username: 'userEmail',
         apiToken: 'testrail apitoken',
-        runName: 'name for the test run'  
+        runName: 'name for the test run' ,
+        closeRun: true
     }]],
 ```
 
@@ -39,3 +40,4 @@ const CustomReporter = require('testrail-wdio-custom-reporter')
         username: 'userEmail', // no default, required field
         apiToken: 'testrail apitoken', // no default, required field
         runName: 'name for the test run'
+        closeRun: true/false //required field. True if you want the run to be closed after execution. Otherwise false
