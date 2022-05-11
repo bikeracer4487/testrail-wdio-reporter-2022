@@ -7,11 +7,15 @@ Use test rail API https://www.gurock.com/testrail/docs/api/reference
 The first thing you need is to enable the TestRail API so that report can communicate with TestRail and push the test results.
 To do so, log into your TestRail account and go to Administration > Site Settings > API and make sure you click the checkbox near Enable API.
 
+After this, you'll need to create an API key from a user on your Testrail instance, by going to My Settings > API Keys.
+
 
 ## Features
 
-- testrail
-- webdriverio/mocha
+- Webdriver/IO Custom Reporter
+- Creates new test run to publish results and can optionally close that test run
+- Test run name can be customized and will have date and time appended
+- Further features and functionality can be added by editing `..\node_modules\testrail-wdio-reporter-2022\src\testrail-reporter.js` or by forking this project
 
 
 ## Usage/Examples
