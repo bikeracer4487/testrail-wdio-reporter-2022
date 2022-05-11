@@ -15,7 +15,7 @@ After this, you'll need to create an API key from a user on your Testrail instan
 - Webdriver/IO Custom Reporter
 - Creates new test run to publish results and can optionally close that test run
 - Test run name can be customized and will have date and time appended
-- Further features and functionality can be added by editing `..\node_modules\testrail-wdio-reporter-2022\src\testrail-reporter.js` or by forking this project
+- Further features and functionality can be added by editing `..\node_modules\testrail-wdio-reporter-2022\src\testrail-reporter.js` in your project or by forking this project
 
 
 ## Usage/Examples
