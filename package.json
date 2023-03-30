@@ -1,7 +1,7 @@
 {
   "name" : "testrail-wdio-reporter-2022",
   "description": "Create a run on testrail and the update the test cases results, with the option to close the test run",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "./src/index.js",
   "scripts": {
     "star": ""
