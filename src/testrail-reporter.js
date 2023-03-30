@@ -3,8 +3,8 @@
 
 const WDIOReporter = require("@wdio/reporter").default;
 const axios = require('axios');
-const async = require('async');
-const { skipPartiallyEmittedExpressions } = require("typescript");
+//const async = require('async');
+//const { skipPartiallyEmittedExpressions } = require("typescript");
 let runId,
   params,
   resp;
@@ -13,11 +13,11 @@ let resultsForIT = [];
 let testCasesIDs = [];
 
 function sleep(duration) {
-	return new Promise(resolve => {
-		setTimeout(() => {
-			resolve()
-		}, duration * 1000)
-	})
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, duration * 1000)
+  })
 }
 
 function getObject(case_id, status_id, comment, defect) {
@@ -35,7 +35,6 @@ function getTime() {
 }
 
 function getRunStatus () {
-  // console.log("Getting run status.");
   try {
     return axios.get(
       `https://${params.domain}/index.php?/api/v2/get_run/${runId}`,
@@ -57,9 +56,13 @@ function getRunStatus () {
 }
 
 const updateTestRunResults = async () => {
+  // Check if there are any results to push
+  if (resultsForIT.length === 0) {
+    console.log("No test results to push. Likely failed on before all.");
+    return;
+  }
+
   resp = undefined;
-  // this.write(getTime() + ": Updating Test Run Results");
-  // console.log("Updating test run results.");
 
   try {
     const resp = await axios.post(
@@ -87,8 +90,6 @@ const updateTestRunResults = async () => {
 };
 
 const updateTestRun = async () => {
-  // this.write(getTime() + ": Updating test run.");
-  // console.log("Updating test run");
   try {
       const resp = await axios.post(
         `https://${params.domain}/index.php?/api/v2/update_run/${runId}`,
@@ -103,16 +104,12 @@ const updateTestRun = async () => {
           },
         },
       )
-      //console.log(resp.data);
   } catch (err) {
-      // Handle Error Here
       console.error(err);
   }
 };
 
 const closeTestRun = async () => {
-  // this.write(getTime() + ": Closing test run.");
-  // console.log("Closing test run.");
   await axios.post(
     `https://${params.domain}/index.php?/api/v2/close_run/${runId}`,
     {
@@ -128,36 +125,34 @@ const closeTestRun = async () => {
         password: params.apiToken,
       },
     })
-    .then(function (response) {
-      //console.log(JSON.stringify(response.data));
-    })
     .catch(function (error) {
       console.log(error);
-    });
-  //console.log(resp.data);
+    }
+  );
 }
 
-function pushResults(testID, status, comment) {
+async function pushResults(testID, status, comment) {
   resp = undefined;
-  // this.write(getTime() + ": Pushing results.");
   console.log("Pushing results.");
 
-  axios.post(
-    `https://${params.domain}/index.php?/api/v2/add_result_for_case/${projectId}/${testID}`,
-    {
-      status_id: status,
-      comment: comment,
-    },
-    {
-      auth: {
-        username: params.username,
-        password: params.apiToken,
+  try {
+    const response = await axios.post(
+      `https://${params.domain}/index.php?/api/v2/add_result_for_case/${projectId}/${testID}`,
+      {
+        status_id: status,
+        comment: comment,
       },
-    },
-  ).then(function (response) {
+      {
+        auth: {
+          username: params.username,
+          password: params.apiToken,
+        },
+      },
+    );
     resp = true;
-  })
-
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 module.exports = class TestrailReporter extends WDIOReporter {
@@ -166,11 +161,11 @@ module.exports = class TestrailReporter extends WDIOReporter {
     super(options)
     params = options;
     let date = new Date();
-    //let month_num = date.getMonth() + 1;
-    //let month = month_num.toString;
     let month = (date.getMonth() + 1).toString();
     let day = date.getDate().toString();
     let minutes = date.getMinutes().toString();
+    this.hookError = null;
+    this.hookFailed = false;
     if (month.length < 2) month = "0" + month;
     if (day.length < 2) day = "0" + day;
     if (minutes.length < 2) minutes = "0" + minutes;
@@ -190,7 +185,6 @@ module.exports = class TestrailReporter extends WDIOReporter {
       },
     )
     .catch(function (error) {
-      // handle error
       console.log(error);
     })
       .then((response) => {
@@ -198,6 +192,7 @@ module.exports = class TestrailReporter extends WDIOReporter {
         this.write(`Run "${title}" created with number ${runId}`);
       })
   }
+
   onSuiteStart(test){
   }
 
@@ -207,6 +202,11 @@ module.exports = class TestrailReporter extends WDIOReporter {
   }
 
   onTestFail(test) {
+      console.log("Test Failed");
+      if (test.error && test.error.type === 'hook'){
+        this.hookFailed = true;
+        console.log("Setting hookFailed to True in onTestFail");
+      }
       resultsForIT.push(getObject((test.title.split(' '))[0].replace('C', ''), 5, `This test case is failed:\n ${test.errors}`))
       testCasesIDs.push((test.title.split(' '))[0].replace('C', ''))
   }
@@ -234,78 +234,18 @@ module.exports = class TestrailReporter extends WDIOReporter {
         }
       });
     }
-
-    /*
-    if (params.closeRun) {
-      //console.log("Log - Closing test run.");
-      //this.write("\nWrite - Closing test run");
-      //closeTestRun();
-
-      let retries = 0;
-      while(retries < 100){
-        //this.write(`\nClosing Run, Attempt #${retries + 1}: `);
-        if(waitFinish = false){
-          //this.write("Running close");
-          //console.log(`\nClosing Run, Attempt #${retries + 1}: Running close`);
-          closeTestRun();
-        }
-        else{
-          //this.write("Skipping close");
-          //console.log(`\nClosing Run, Attempt #${retries + 1}: Skipping close`);
-        }
-        retries = retries + 1;
-      }
-    }
-    else {
-      //console.log("Log - Not closing test run");
-      this.write("\nWrite - Not closing test run");
-    }
-    /*
-    let untested = 1;
-    let passed = 0;
-    let failed = 0;
-    let ran = 0;
-    let retries = 0;
-    while (untested > 0 || ran == 0){
-      // const runStatus = getRunStatus();
-
-      axios.get(
-        `https://${params.domain}/index.php?/api/v2/get_run/${runId}`,
-        {
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          auth: {
-            username: params.username,
-            password: params.apiToken,
-          },
-        },
-      )
-      .then(res => {
-        // console.log(res.data.untested_count);
-        passed = res.data.passed_count;
-        failed = res.data.failed_count;
-        ran = passed + failed;
-        untested = res.data.untested_count;
-        if ((untested == 0) && (params.closeRun) && (ran == 0)) {
-          console.log("Ran " + ran + ", Untested " + untested);
-          params.closeRun = false;
-          // closeTestRun();
-          console.log("Attempting to close run");
-        }
-        else if (untested == 0) console.log("Ran " + ran + ", Untested " + untested);
-        else console.log("Ran " + ran + ", Untested " + untested);
-      })
-      .catch(err => console.error(err));
-
-      retries = retries + 1;
-
-      if (retries > 10) untested = 0;
-    }
-    */
-    
-    // if (params.closeRun) closeTestRun();
     this.write('\nThe results are pushed!')
+  }
+
+  onHookFail(hook) {
+    console.log("onHookFail called");
+    console.log(`Hook Fail: ${hook.title}`);
+    if (hook.title.includes('"before all" hook')) {
+      const failedCaseID = parseInt((hook.parent.tests[0].title.split(' '))[0].replace('C', ''));
+      resultsForIT.push(getObject(failedCaseID, 5, `This test case failed in "before all" hook:\n ${hook.error}`));
+      testCasesIDs.push(failedCaseID);
+      console.log("Failed in before all");
+    }
   }
 
   async sync(test, isSuite = false) {
